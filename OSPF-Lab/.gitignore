@@ -1,0 +1,5 @@
+*.pkt
+*.gns3
+*.unl
+*.log
+.DS_Store
