@@ -1,0 +1,128 @@
+OSPF Routing Configuration Lab
+Objective
+
+Configure OSPF between Cisco routers and verify neighbor adjacency using both the network statement method and interface-based OSPF configuration.
+
+Topology
+R1 ---------------- R2
+E0/0              E0/0
+
+192.168.10.1/30   192.168.10.2/30
+
+
+R3 ---------------- R4
+E0/1              E0/0
+
+192.168.20.1/30   192.168.20.2/30
+
+Router 1 Configuration
+enable
+configure terminal
+
+interface e0/0
+ ip address 192.168.10.1 255.255.255.252
+ no shutdown
+exit
+
+router ospf 1
+ router-id 1.1.1.1
+ network 192.168.10.0 0.0.0.3 area 0
+
+end
+
+Verification
+show ip interface brief
+show ip ospf
+show ip ospf neighbor
+
+Router 2 Configuration
+enable
+configure terminal
+
+interface e0/0
+ ip address 192.168.10.2 255.255.255.252
+ no shutdown
+exit
+
+router ospf 2
+ router-id 2.2.2.2
+ network 192.168.10.0 0.0.0.3 area 0
+
+end
+
+Verification
+show ip interface brief
+show ip ospf
+show ip ospf neighbor
+
+Router 3 Configuration (Interface-Based OSPF)
+enable
+configure terminal
+
+interface e0/1
+ ip address 192.168.20.1 255.255.255.252
+ no shutdown
+ ip ospf 1 area 0
+ ip ospf network point-to-point
+exit
+
+router ospf 1
+ router-id 3.3.3.3
+
+end
+
+Verification
+ping 192.168.20.2
+
+show ip ospf
+show ip ospf neighbor
+
+Router 4 Configuration (Interface-Based OSPF)
+enable
+configure terminal
+
+interface e0/0
+ ip address 192.168.20.2 255.255.255.252
+ no shutdown
+ ip ospf 2 area 0
+ ip ospf network point-to-point
+exit
+
+router ospf 2
+ router-id 4.4.4.4
+
+end
+
+Verification
+ping 192.168.20.1
+
+show ip ospf
+show ip ospf neighbor
+
+Verification Commands
+show ip interface brief
+show ip ospf
+show ip ospf neighbor
+show running-config | section ospf
+
+Expected Result
+Neighbor ID     State
+1.1.1.1         FULL
+2.2.2.2         FULL
+3.3.3.3         FULL
+4.4.4.4         FULL
+
+
+Successful OSPF adjacency formation indicates that routers are exchanging routing information dynamically.
+
+Key Learnings
+OSPF is a link-state routing protocol.
+OSPF uses unique Router IDs to identify routers.
+OSPF process IDs do not need to match between routers.
+Interfaces must be operational (up/up) before OSPF neighbors can form.
+Neighbor state FULL indicates successful adjacency.
+OSPF can be configured using:
+Network statements
+Interface-based commands (ip ospf area)
+Troubleshooting Performed
+
