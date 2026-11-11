@@ -1,0 +1,18 @@
+enable
+configure terminal
+interface e0/0
+ ip address 192.168.10.1 255.255.255.252
+ no shutdown
+exit
+router ospf 1
+ router-id 1.1.1.1
+ network 192.168.10.0 0.0.0.3 area 0
+exit
+end
+write memory
+
+! Verification
+show ip interface brief
+show ip ospf neighbor
+show ip ospf
+show ip route ospf
