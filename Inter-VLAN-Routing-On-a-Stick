@@ -1,0 +1,411 @@
+# Inter-VLAN Routing – Router-on-a-Stick Lab
+
+### Cisco Switching and Routing | VLAN 10, VLAN 20 & VLAN 40
+
+## 1. Project Overview
+
+This lab demonstrates how to configure Inter-VLAN Routing using the **Router-on-a-Stick (ROAS)** technique.
+
+The objective is to allow devices belonging to different VLANs and IP subnets to communicate through router subinterfaces using IEEE 802.1Q trunking.
+
+The lab uses:
+
+- Cisco Layer 2 switches
+- Cisco routers
+- VLAN segmentation
+- 802.1Q trunking
+- Router subinterfaces
+- Inter-VLAN routing
+- End-to-end connectivity testing
+
+## 2. Network Topology
+
+The lab contains two separate Router-on-a-Stick configurations.
+
+**Network 1 – R1 and SW1**
+
+- VLAN 10 – HR
+- VLAN 20 – Engineering
+
+**Network 2 – R2 and its access switch**
+
+- VLAN 40 – London
+
+Each router provides the default gateway for its connected VLAN.
+
+## 3. IP Addressing Table
+
+| Device | VLAN | IP Address      | Default Gateway |
+| ------ | ---- | --------------- | --------------- |
+| R1     | 10   | 192.168.10.1/24 | —               |
+| PC1    | 10   | 192.168.10.3/24 | 192.168.10.1    |
+| PC2    | 10   | 192.168.10.4/24 | 192.168.10.1    |
+| R1     | 20   | 192.168.20.1/24 | —               |
+| PC3    | 20   | 192.168.20.3/24 | 192.168.20.1    |
+| R2     | 40   | 192.168.40.1/24 | —               |
+| PC4    | 40   | 192.168.40.3/24 | 192.168.40.1    |
+
+**Important:** Router gateway addresses must not be assigned to PCs. PC4 therefore uses 192.168.40.3, not 192.168.40.1.
+
+---
+
+# PART A: Router-on-a-Stick – R1 and SW1
+
+## 4. Switch Configuration – SW1
+
+### Step 1: Create VLANs
+
+```
+enable
+configure terminal
+
+vlan 10
+ name HR
+
+vlan 20
+ name Engineering
+```
+
+### Step 2: Assign Access Ports
+
+Assign Ethernet 0/0 and Ethernet 0/1 to VLAN 10.
+
+```
+interface range e0/0-1
+ switchport mode access
+ switchport access vlan 10
+ exit
+```
+
+Assign Ethernet 0/2 to VLAN 20.
+
+```
+interface e0/2
+ switchport mode access
+ switchport access vlan 20
+ exit
+```
+
+### Step 3: Configure Trunk Port
+
+Configure Ethernet 0/3 as a trunk connecting SW1 to R1.
+
+```
+interface e0/3
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20
+ no shutdown
+ exit
+
+end
+write memory
+```
+
+**Note:** If your switch does not support the `switchport trunk encapsulation dot1q` command, omit it. Some Cisco switches support only 802.1Q.
+
+## 5. Router Configuration – R1
+
+Configure router subinterfaces to provide gateways for VLAN 10 and VLAN 20.
+
+### Step 1: Configure VLAN 10
+
+```
+enable
+configure terminal
+
+interface e0/0.10
+ encapsulation dot1q 10
+ ip address 192.168.10.1 255.255.255.0
+ exit
+```
+
+### Step 2: Configure VLAN 20
+
+```
+interface e0/0.20
+ encapsulation dot1q 20
+ ip address 192.168.20.1 255.255.255.0
+ exit
+```
+
+### Step 3: Enable Physical Interface
+
+```
+interface e0/0
+ no shutdown
+ exit
+
+end
+write memory
+```
+
+**Explanation:**
+
+- `e0/0.10` handles traffic for VLAN 10.
+- `e0/0.20` handles traffic for VLAN 20.
+- `encapsulation dot1q` identifies the VLAN tag.
+- The router forwards traffic between the two VLANs.
+
+## 6. PC Configuration – Network 1
+
+Configure the PCs using the VPCS terminal.
+
+**PC1 – HR**
+
+```
+ip 192.168.10.3/24 192.168.10.1
+save
+```
+
+**PC2 – HR**
+
+```
+ip 192.168.10.4/24 192.168.10.1
+save
+```
+
+**PC3 – Engineering**
+
+```
+ip 192.168.20.3/24 192.168.20.1
+save
+```
+
+## 7. Verification – Network 1
+
+### On SW1
+
+Verify VLAN assignments:
+
+```
+show vlan brief
+```
+
+Verify trunk configuration:
+
+```
+show interfaces trunk
+```
+
+### On R1
+
+Verify interface status:
+
+```
+show ip interface brief
+```
+
+Verify routing table:
+
+```
+show ip route
+```
+
+### Connectivity Tests
+
+From PC2, ping PC3:
+
+```
+ping 192.168.20.3
+```
+
+From PC3, ping PC1:
+
+```
+ping 192.168.10.3
+```
+
+Expected result: Successful communication between VLAN 10 and VLAN 20.
+
+---
+
+# PART B: Router-on-a-Stick – R2 and VLAN 40
+
+## 8. Router Configuration – R2
+
+Configure the R2 subinterface for VLAN 40.
+
+```
+enable
+configure terminal
+
+interface e0/0.40
+ encapsulation dot1q 40
+ ip address 192.168.40.1 255.255.255.0
+ exit
+
+interface e0/0
+ no shutdown
+ exit
+
+end
+write memory
+```
+
+The IP address `192.168.40.1` will act as the default gateway for devices in VLAN 40.
+
+## 9. Switch Configuration – VLAN 40
+
+### Step 1: Create VLAN 40
+
+```
+enable
+configure terminal
+
+vlan 40
+ name London
+ exit
+```
+
+### Step 2: Configure Trunk Port
+
+Configure Ethernet 0/0 as the trunk link between the switch and R2.
+
+```
+interface e0/0
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 40
+ no shutdown
+ exit
+```
+
+### Step 3: Configure Access Port
+
+Configure Ethernet 0/1 as an access port for VLAN 40.
+
+```
+interface e0/1
+ switchport mode access
+ switchport access vlan 40
+ no shutdown
+ exit
+
+end
+write memory
+```
+
+## 10. PC4 Configuration
+
+Configure PC4 with an IP address in the VLAN 40 subnet.
+
+```
+ip 192.168.40.3/24 192.168.40.1
+save
+```
+
+| Setting         | Value         |
+| --------------- | ------------- |
+| IP Address      | 192.168.40.3  |
+| Subnet Mask     | 255.255.255.0 |
+| Default Gateway | 192.168.40.1  |
+| VLAN            | 40 – London   |
+
+## 11. Verification – Network 2
+
+### On the Switch
+
+```
+show vlan brief
+show interfaces trunk
+```
+
+### On R2
+
+```
+show ip interface brief
+show ip route
+```
+
+### From PC4
+
+Test connectivity to the default gateway:
+
+```
+ping 192.168.40.1
+```
+
+Expected result: PC4 successfully reaches the R2 VLAN 40 gateway.
+
+---
+
+# 12. Understanding How Router-on-a-Stick Works
+
+Router-on-a-Stick allows multiple VLANs to communicate using one physical router interface.
+
+The process works as follows:
+
+1. A PC sends traffic to another VLAN.
+2. The switch forwards the traffic through its trunk port.
+3. The trunk carries the frame with an 802.1Q VLAN tag.
+4. The router receives the tagged frame through the physical interface.
+5. The matching router subinterface processes the VLAN traffic.
+6. The router performs Layer 3 routing.
+7. The packet is forwarded back through the trunk with the appropriate VLAN tag.
+8. The switch delivers the traffic to the destination PC.
+
+## 13. Important Commands Cheat Sheet
+
+| Purpose                     | Command                   |
+| --------------------------- | ------------------------- |
+| Display VLANs               | `show vlan brief`         |
+| Display trunk ports         | `show interfaces trunk`   |
+| Check interfaces            | `show ip interface brief` |
+| Display routing table       | `show ip route`           |
+| Check running configuration | `show running-config`     |
+| Save configuration          | `write memory`            |
+| Check interface status      | `show interfaces status`  |
+
+## 14. Troubleshooting Guide
+
+| Problem                  | Possible Solution                         |
+| ------------------------ | ----------------------------------------- |
+| PC cannot reach gateway  | Check PC IP, gateway and router interface |
+| VLAN-to-VLAN ping fails  | Check router subinterfaces and dot1q tags |
+| Trunk is not working     | Check trunk mode and allowed VLANs        |
+| VLAN is missing          | Create the VLAN on the switch             |
+| Router interface is down | Use `no shutdown`                         |
+| PC cannot communicate    | Check access port VLAN assignment         |
+| PC4 cannot reach gateway | Check VLAN 40 and R2 trunk configuration  |
+
+## 15. Important Lab Notes
+
+- The switch-to-router connection must operate as an 802.1Q trunk.
+- Each VLAN requires its own router subinterface.
+- Every VLAN must have a unique IP subnet.
+- Each PC must use the correct default gateway.
+- Router physical interfaces must be enabled.
+- Access ports must be assigned to the correct VLAN.
+- The trunk must allow the VLAN IDs required by the lab.
+
+**Routing limitation:** Network 1 (R1) and Network 2 (R2) are separate networks in this lab. PC4 will not automatically communicate with PC1, PC2 or PC3. Communication between the two router networks requires an additional routed connection between R1 and R2 and appropriate routing configuration.
+
+---
+
+## 16. Project Conclusion
+
+This lab demonstrates successful VLAN segmentation and Inter-VLAN Routing using Cisco Router-on-a-Stick.
+
+The exercise covers:
+
+- VLAN creation and naming.
+- Access port configuration.
+- 802.1Q trunk configuration.
+- Router subinterface configuration.
+- IP addressing and default gateways.
+- Inter-VLAN communication.
+- Network verification and troubleshooting.
+
+These are essential networking skills for Cisco CCNA studies and practical enterprise network administration.
+
+**Technologies:** Cisco IOS | VLANs | IEEE 802.1Q | Router-on-a-Stick | IPv4 | Inter-VLAN Routing
+
+## Recommended GitHub project structure
+
+I recommend adding this as a second project inside your existing `Network-Labs` repository
+
+One important technical distinction: The R1 lab tests routing between HR and Engineering. The R2 lab tests the separate London VLAN. They need an additional R1–R2 routing link to communicate with each other.
+
+I can also publish this as your second project directly in your existing GitHub repository.
+
