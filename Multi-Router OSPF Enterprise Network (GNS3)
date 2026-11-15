@@ -1,0 +1,221 @@
+## Project Overview
+
+This project demonstrates the implementation of OSPF (Open Shortest Path First) in a multi-router enterprise network using GNS3.
+
+The network consists of four routers connected in a ring topology and four PCs connected to separate LANs. OSPF dynamically exchanges routing information between routers, allowing full connectivity across all networks.
+
+
+Built a four-router enterprise network using OSPF Area 0.
+
+Implemented:
+- Dynamic Routing
+- OSPF Neighbor Relationships
+- Route Advertisement
+- Router IDs
+- End-to-End Connectivity
+- Network Failover Testing
+
+Tools:
+- GNS3
+- Cisco IOS
+- VPCS
+
+Step 1: Configure the Topology
+Topology
+Plain Text
+PC1               PC2
+|                 |
+|                 |
+|                 |
+R1 ------------- R2
+|                |
+|                |
+|                |
+R4 ------------- R3
+|                |
+|                |
+|                |
+PC4             PC3
+
+
+Step 2: Configure Links
+Simplified IP Plan
+Router-to-Router Links
+Link	Network
+R1 ↔ R2	192.168.10.0/30
+R2 ↔ R3	192.168.20.0/30
+R3 ↔ R4	192.168.30.0/30
+R4 ↔ R1	192.168.40.0/30
+
+
+LAN Networks
+Router	LAN
+R1	192.168.1.0/24
+R2	192.168.2.0/24
+R3	192.168.3.0/24
+R4	192.168.4.0/24
+
+
+Step 3: Configure R1
+enable
+conf t
+
+interface e0/0
+ip address 192.168.10.1 255.255.255.252
+no shutdown
+
+interface e0/2
+ip address 192.168.40.2 255.255.255.252
+no shutdown
+
+interface e0/3
+ip address 192.168.100.1 255.255.255.0
+no shutdown
+
+
+Step 4: Configure R2
+interface e0/1
+ip address 192.168.10.2 255.255.255.252
+no shutdown
+
+interface e1/1
+ip address 192.168.20.1 255.255.255.252
+no shutdown
+
+interface e1/0
+ip address 192.168.200.1 255.255.255.0
+no shutdown
+
+
+Step 5: Configure R3
+interface e1/2
+ip address 192.168.20.2 255.255.255.252
+no shutdown
+
+interface e0/0
+ip address 192.168.30.1 255.255.255.252
+no shutdown
+
+interface e1/3
+ip address 192.168.210.1 255.255.255.0
+no shutdown
+
+Step 6: Configure R4
+interface e0/2
+ip address 192.168.30.2 255.255.255.252
+no shutdown
+
+interface e0/3
+ip address 192.168.40.1 255.255.255.252
+no shutdown
+
+interface e0/0
+ip address 192.168.220.1 255.255.255.0
+no shutdown
+
+Step 7: Configure the PCs
+PC1
+ip 192.168.100.10/24 192.168.100.1
+
+PC2
+ip 192.168.200.10/24 192.168.200.1
+
+PC3
+ip 192.168.210.10/24 192.168.210.1
+
+PC4
+ip 192.168.220.10/24 192.168.220.1
+
+
+Step 8: Test Neighbor Routers
+R1
+ping 192.168.10.2
+ping 192.168.40.1
+
+Step 9: Configure OSPF
+R1
+router ospf 1
+router-id 1.1.1.1
+
+network 192.168.10.0 0.0.0.3 area 0
+network 192.168.40.0 0.0.0.3 area 0
+network 192.168.100.0 0.0.0.255 area 0
+
+
+R2
+router ospf 1
+router-id 2.2.2.2
+
+network 192.168.10.0 0.0.0.3 area 0
+network 192.168.20.0 0.0.0.3 area 0
+network 192.168.200.0 0.0.0.255 area 0
+
+R3
+router ospf 1
+router-id 3.3.3.3
+
+network 192.168.20.0 0.0.0.3 area 0
+network 192.168.30.0 0.0.0.3 area 0
+network 192.168.210.0 0.0.0.255 area 0
+
+
+R4
+router ospf 1
+router-id 4.4.4.4
+
+network 192.168.30.0 0.0.0.3 area 0
+network 192.168.40.0 0.0.0.3 area 0
+network 192.168.220.0 0.0.0.255 area 0
+
+Step 10: Verify OSPF
+show ip ospf neighbor
+show ip route
+
+
+Step 11: End-to-End Test
+PC1
+ping 192.168.200.10
+ping 192.168.210.10
+ping 192.168.220.10
+
+
+
+Use this simple rule:
+10 = R1-R2
+20 = R2-R3
+30 = R3-R4
+40 = R4-R1
+
+100 = Site 1 LAN
+200 = Site 2 LAN
+210 = Site 3 LAN
+220 = Site 4 LAN
+
+
+What Have You Accomplished?
+
+You have successfully configured:
+
+✅ IPv4 addressing
+
+✅ Router interfaces
+
+✅ OSPF process
+
+✅ OSPF neighbors
+
+✅ Route advertisement
+
+✅ Dynamic routing
+
+✅ End-to-end connectivity
+
+
+
+
+
+
+
+
+
+
