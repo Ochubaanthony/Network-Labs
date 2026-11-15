@@ -1,0 +1,207 @@
+What is Router-on-a-Stick?
+
+A method where one physical router interface uses multiple subinterfaces to route between VLANs.
+
+Project 1 - Router-on-a-Stick Office Network
+
+Technologies:
+- Cisco Packet Tracer/GNS3
+- VLANs
+- Trunking
+- Inter-VLAN Routing
+- Router-on-a-Stick
+
+Skills Demonstrated:
+- Network Segmentation
+- Layer 2 Switching
+- Layer 3 Routing
+- Troubleshooting
+
+
+
+Lab Topology
+                 Router R1
+                  e0/0
+                    |
+              Trunk Link
+                    |
+                  SW1 e0/3
+    e0/0    ------------------------
+        |          |e0/1          |e0/2
+ e0     PC1        PC2 e0        PC3 e0
+     VLAN10     VLAN20     VLAN30
+
+
+Create 3 departments:
+HR        VLAN 10
+Finance   VLAN 20
+IT        VLAN 30
+
+
+Devices Needed
+1 Router (R1)
+
+1 Switch
+
+3 PCs
+
+Addressing Plan
+Device	                   IP Address	                  Subnet Mask        	      Gateway
+PC1 (HR)	                 192.168.10.10  	            255.255.255.0	            192.168.10.1
+PC2 (Finance)	             192.168.20.10	              255.255.255.0	            192.168.20.1
+PC3 (IT)	                 192.168.30.10  	            255.255.255.0       	    192.168.30.1
+
+
+STEP 1 - Connect Devices
+Happens in Packet Tracer (Physical Cabling)
+Plain Text
+PC1 -------- e0/0 SW1
+ 
+PC2 -------- e0/1 SW1
+ 
+PC3 -------- e0/2 SW1
+ 
+SW1 e0/3 --- e0/0 R1
+
+
+
+STEP 2 - Create VLANs
+
+✅ Device: SWITCH SW1
+enable
+configure terminal
+
+vlan 10
+name HR
+
+vlan 20
+name Finance
+
+vlan 30
+name IT
+
+show vlan brief
+
+Expected result 
+10 HR
+20 Finance
+30 IT
+
+
+
+STEP 3 - Assign Ports to VLANs
+✅ Device: SWITCH SW1
+PC1 belongs to VLAN 10
+
+interface fa0/1
+switchport mode access
+switchport access vlan 10
+
+PC2 belongs to VLAN 20
+interface fa0/2
+switchport mode access
+switchport access vlan 20
+
+PC3 belongs to VLAN 30
+interface fa0/3
+switchport mode access
+switchport access vlan 30
+
+show vlan brief
+You should see:
+VLAN10  e0/0
+VLAN20  e0/1
+VLAN30  e0/2
+
+
+STEP 4 - Configure Trunk Port
+✅ Device: SWITCH SW1
+The router needs to receive traffic from all VLANs.
+Configure the port connected to R1.
+
+
+interface e0/3
+switchport trunk encapsulation dot1q
+switchport mode trunk
+no shutdown
+
+show interface trunk
+Expected
+Port      Mode
+e0/3      trunk
+
+
+STEP 5 - Configure Router Interface
+✅ Device: ROUTER R1
+
+enable
+conf t
+
+interface e0/3
+no shutdown
+
+
+STEP 6 - Create Router Subinterfaces
+✅ Device: ROUTER R1
+VLAN 10 Gateway
+
+interface e0/0
+no shutdown
+
+Vlan 10 Gateway
+interface e0/0.10
+encapsulation dot1Q 10
+ip address 192.168.10.1 255.255.255.0                Default Gateway is 192.168.10.1
+
+Vlan 20 Gateway
+interface e0/0.20
+encapsulation dot1Q 20
+ip address 192.168.20.1 255.255.255.0                 Default Gateway is 192.168.20.1
+
+Vlan 30 Gateway
+interface e0/0.30
+encapsulation dot1Q 30
+ip address 192.168.30.1 255.255.255.0                 Default Gateway is 192.168.30.1
+
+Verify
+show ip interface brief
+
+
+STEP 7 - Configure PCs
+✅ Device: PC1
+Desktop → IP Configuration
+ip 192.168.10.10 255.255.255.0 192.168.10.1
+
+✅ Device: PC2
+Desktop → IP Configuration
+ip 192.168.20.10 255.255.255.0 192.168.20.1
+
+✅ Device: PC3
+Desktop → IP Configuration
+ip 192.168.30.10 255.255.255.0 192.168.30.1
+
+
+STEP 8 - Testing
+From PC1
+ping PC3
+ping 192.168.30.10
+
+From PC2
+ping PC3
+ping 192.168.30.10
+
+
+
+STEP 9 - Verification Commands
+Switch Commands
+show vlan brief
+show interfaces trunk
+show running-config
+
+Router Commands
+✅ On R1
+show ip interface brief
+show running-config
+show ip route
+
+
