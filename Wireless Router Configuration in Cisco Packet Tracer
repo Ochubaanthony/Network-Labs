@@ -1,0 +1,149 @@
+Topology: 1 Wireless Router + 2 PCs
+
+Step 1: Add Devices
+
+Drag and place:
+
+1 × Wireless Router
+2 × PCs
+Step 2: Configure Wireless Router
+1. Open Router
+Double-click the Wireless Router
+2. Disable DHCP
+Click GUI tab
+Default IP Address:
+192.168.0.1
+Locate DHCP Server
+Select Disable
+Click Save Settings
+3. Configure Wireless Network Name (SSID)
+Click Wireless
+Wireless Network Name (SSID):
+MY Network
+Click Save Settings
+4. Configure Wireless Security
+Click Wireless Security
+Security Mode:
+WEP
+Create 10-digit password:
+1234567890
+Click Save Settings
+
+Router configuration is now complete.
+
+Step 3: Configure PC1 Wireless Adapter
+1. Open PC1
+Double-click PC1
+2. Power Off PC
+Click Physical
+Turn power switch OFF
+3. Replace Network Card
+Remove existing FastEthernet card
+Insert WMP300N Wireless Adapter
+4. Power On PC
+Turn power switch ON
+5. Connect to Wireless Network
+Go to Desktop
+Click PC Wireless
+Click Connect
+
+Select:
+
+SSID: MY Network
+
+Password:
+
+1234567890
+
+Click:
+
+Connect
+Step 4: Configure Static IP on PC1
+
+Since DHCP is disabled, manually assign IP.
+
+Go to:
+
+Desktop → IP Configuration
+
+Configure:
+
+Setting	Value
+IP Address	192.168.0.2
+Subnet Mask	255.255.255.0
+Default Gateway	192.168.0.1
+
+Close window.
+
+Step 5: Configure PC2 Wireless Adapter
+1. Open PC2
+Double-click PC2
+2. Power Off PC
+Click Physical
+Turn power switch OFF
+3. Replace Network Card
+Remove FastEthernet card
+Insert WMP300N Wireless Adapter
+4. Power On PC
+Turn power switch ON
+5. Connect to Wireless Network
+
+Go to:
+
+Desktop → PC Wireless
+
+Click:
+
+Connect
+
+Select:
+
+SSID: MY Network
+
+Enter password:
+
+1234567890
+
+Click:
+
+Connect
+Step 6: Configure Static IP on PC2
+
+Go to:
+
+Desktop → IP Configuration
+
+Configure:
+
+Setting	Value
+IP Address	192.168.0.3
+Subnet Mask	255.255.255.0
+Default Gateway	192.168.0.1
+Step 7: Verify Connectivity
+From PC1
+
+Desktop → Command Prompt
+
+Plain Text
+ping 192.168.0.3
+
+Expected:
+
+Plain Text
+Reply from 192.168.0.3
+From PC2
+
+Desktop → Command Prompt
+
+Plain Text
+ping 192.168.0.2
+
+Expected:
+
+Plain Text
+Reply from 192.168.0.2
+IP Addressing Summary
+Device	IP Address	Subnet Mask	Gateway
+Wireless Router	192.168.0.1	255.255.255.0	N/A
+PC1	192.168.0.2	255.255.255.0	192.168.0.1
+PC2	192.168.0.3	255.255.255.0	192.168.0.1
